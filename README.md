@@ -32,10 +32,11 @@ Jira-ready SOC ticket.
 * **Run the real thing:** `cd intelpulse && cp .env.example .env && docker compose up --build`
   → API on `:8000/docs`, dashboard on `:8080`.
 * **Docs:** [project README](intelpulse/README.md) · [scoring model](intelpulse/docs/SCORING.md) ·
-  [API reference](intelpulse/docs/API.md) · [security posture](intelpulse/docs/SECURITY.md)
+  [API reference](intelpulse/docs/API.md) · [security posture](intelpulse/docs/SECURITY.md) ·
+  [design system](intelpulse/docs/DESIGN.md)
 * **Tests:** `cd intelpulse && make test` (63 backend, incl. the security suite),
-  `make test-web` (13 browser-engine parity), `make test-ui` (13 Chromium checks: XSS, hostile URLs,
-  slow-backend degradation), `make audit` (pip-audit).
+  `make test-web` (13 browser-engine parity), `make test-ui` (48 Chromium checks: XSS, hostile URLs,
+  degradation, command palette, theming, accessibility), `make audit` (pip-audit).
 To change the headshot: replace profile.jpg, then regenerate variants:
 `npx sharp-cli -i assets/profile.jpg -o assets/profile-800.webp resize 800` (repeat for -800.jpg, -400.webp, -400.jpg)
 
