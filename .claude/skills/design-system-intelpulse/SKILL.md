@@ -67,6 +67,16 @@ Two rules are specific to that surface:
   nothing is a bug, and `web/tests/suite.spec.mjs` clicks all of them to prove
   it. A decorative render of the product (the hero device mock) must be `inert`
   with `pointer-events: none`, not a second set of live controls.
+- **Every control clears 44×44 on a coarse pointer.** Use a
+  `@media (pointer: coarse)` floor rather than growing the desktop control.
+  Controls that read as text — footer columns, nav links — are controls.
+- **Below 900px the console rail is a drawer, not a column.** Any rule for it is
+  written against `#console-side`, never `.side`: the hero mock contains a
+  picture of the same rail and a blanket rule drags it out of the mock.
+- **The assistant panel is not a chat bot.** It answers only from topics
+  compiled into the page and the loaded dataset, it says so in the panel, and
+  below its match threshold it must say it does not know. Never let it guess at
+  a security question, and always encode the question it echoes back.
 - **Do not bring `--flame` into the workbench, or `--accent` into the site.**
   If the two are ever unified, recompute the ramp against the ordinal gate
   first — the gate is the reason the current ramps are safe, not taste.
