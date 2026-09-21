@@ -11,9 +11,12 @@
 
 name: IntelPulse
 
+# Branches are covered by pull_request and main by push. Listing every branch
+# under push as well ran all five jobs twice on the same commit — same result,
+# double the minutes, and two of each check on the pull request.
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths: ["intelpulse/**", ".github/workflows/intelpulse.yml"]
   pull_request:
     paths: ["intelpulse/**", ".github/workflows/intelpulse.yml"]
