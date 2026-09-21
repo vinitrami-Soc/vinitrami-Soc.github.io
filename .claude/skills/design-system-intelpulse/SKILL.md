@@ -48,6 +48,29 @@ seconds, stay readable at 03:00, and never let decoration compete with data.
   ■ medium, ● low, ▬ informational, ✓ allowlisted) **and** the verdict in text.
 - New palettes **must** be re-validated before use; do not eyeball contrast.
 
+## Two surfaces, two palettes
+
+The rules above describe the **analyst workbench** (`web/workbench.html`,
+`web/assets/tokens.css`) — the dark room an analyst works in.
+
+The **site and operator console** (`web/index.html`, `web/assets/suite.css`) is
+a separate, light surface: sky gradient, glass panels, one hot accent
+`--flame` `#fe5729` against near-black `--ink` `#1c1c1c`, Outfit for interface
+and JetBrains Mono still reserved for machine data. It keeps every rule in this
+file that is not about the dark ramp specifically: severity is never colour
+alone, a chart that carries a number has a table beside it or labels on it,
+motion is optional and everything works with `prefers-reduced-motion`.
+
+Two rules are specific to that surface:
+
+- **Every visible control must do something.** A button or link that answers
+  nothing is a bug, and `web/tests/suite.spec.mjs` clicks all of them to prove
+  it. A decorative render of the product (the hero device mock) must be `inert`
+  with `pointer-events: none`, not a second set of live controls.
+- **Do not bring `--flame` into the workbench, or `--accent` into the site.**
+  If the two are ever unified, recompute the ramp against the ordinal gate
+  first — the gate is the reason the current ramps are safe, not taste.
+
 ## Accessibility
 - Target: WCAG 2.2 AA, keyboard-first.
 - Every interactive element **must** have a visible `:focus-visible` ring
