@@ -59,7 +59,7 @@ jobs:
         run: pytest -q
 
   engine:
-    name: engine parity + design guards · 21 tests
+    name: engine parity + model + design guards · 35 tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -70,7 +70,7 @@ jobs:
       - name: Test
         # These pin the JavaScript engine to the Python scoring rules and hold
         # the design system's static guards, so demo mode cannot drift.
-        run: node --test web/tests/engine.test.mjs web/tests/tokens.test.mjs
+        run: node --test web/tests/*.test.mjs
 
   browser:
     name: browser · ${{ matrix.spec.name }}
