@@ -1,6 +1,7 @@
 # Vinit Rami — Portfolio
 
-Single-file portfolio (`index.html`) — no build step, no dependencies, deploys anywhere.
+Single-file portfolio (`index.html`) — no build step, no dependencies, deploys anywhere — plus
+**IntelPulse**, a full-stack SOC triage platform served from the same repo.
 
 ## Structure
 ```
@@ -11,8 +12,32 @@ vinit-portfolio/
 │   ├── profile-800.webp/jpg # About-section portrait (WebP + JPEG fallback)
 │   ├── profile-400.webp/jpg # footer polaroid + contact avatar
 │   └── Vinit_Rami_CV.pdf    # served by the "Download CV" buttons
+├── intelpulse/              # IntelPulse — threat intel & triage workbench (see below)
+│   ├── web/                 # the live dashboard (GitHub Pages serves this)
+│   ├── backend/             # FastAPI + Celery service, tests, Dockerfile
+│   ├── docs/                # scoring model, API reference, screenshots
+│   └── docker-compose.yml   # api + worker + beat + redis + postgres + nginx
 └── README.md
 ```
+
+## IntelPulse — /intelpulse/
+
+A threat-intelligence correlation and triage workbench: paste an alert, raw syslog or a JSON export,
+and it extracts the indicators, queries AbuseIPDB, AlienVault OTX, GreyNoise, ThreatFox and URLhaus
+concurrently, scores them into one auditable verdict, graphs how they relate and writes a
+Jira-ready SOC ticket.
+
+* **Live demo:** <https://vinitrami-soc.github.io/intelpulse/> — runs a bundled *synthetic* dataset in
+  the browser (clearly labelled), so it works with no backend and no API keys.
+* **Run the real thing:** `cd intelpulse && cp .env.example .env && docker compose up --build`
+  → API on `:8000/docs`, dashboard on `:8080`.
+* **Docs:** [project README](intelpulse/README.md) · [scoring model](intelpulse/docs/SCORING.md) ·
+  [API reference](intelpulse/docs/API.md) · [security posture](intelpulse/docs/SECURITY.md) ·
+  [design system](intelpulse/docs/DESIGN.md)
+* **Tests:** `cd intelpulse && make test` (63 backend, incl. the security suite),
+  `make test-web` (21 node tests: engine parity + design-system guards),
+  `make test-ui` (56 Chromium checks: XSS, hostile URLs, degradation, command palette, theming,
+  accessibility, forced colours, touch targets), `make audit` (pip-audit).
 To change the headshot: replace profile.jpg, then regenerate variants:
 `npx sharp-cli -i assets/profile.jpg -o assets/profile-800.webp resize 800` (repeat for -800.jpg, -400.webp, -400.jpg)
 

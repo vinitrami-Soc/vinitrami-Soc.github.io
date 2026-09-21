@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IntelPulse — Unified Threat Intelligence &amp; Alert Correlation</title>
+<meta name="description" content="One pass across every intelligence source, one auditable verdict, one SOC ticket. IntelPulse correlates the indicators in an alert against AbuseIPDB, AlienVault OTX, GreyNoise, ThreatFox, URLhaus and the offline feeds, and shows its arithmetic.">
+<!-- the sky the site opens on; syncChrome() keeps it in step with theme and route -->
+<meta name="theme-color" content="#a9d3f2">
+<!-- A SOC tool renders attacker-controlled text (log lines, vendor responses).
+     The CSP is the backstop behind output encoding: no inline script, no eval,
+     scripts only from this origin. frame-ancestors cannot be set from a meta
+     tag, so nginx.conf sends it as a real header. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data:;
+  connect-src 'self' https: http://localhost:* http://127.0.0.1:*;
+  form-action 'none';
+  base-uri 'none';
+  object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<meta property="og:title" content="IntelPulse — Unified Threat Intelligence &amp; Alert Correlation">
+<meta property="og:description" content="One pass across every source, one auditable verdict, one ready-to-paste SOC ticket.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23fe5729'/><path d='M14 52h16l8-22 12 44 9-30 7 8h20' fill='none' stroke='white' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/suite.css">
+</head>
+<body>
+
+<!-- The console sidebar is ten entries deep; a keyboard visitor should not
+     have to tab past it to reach the findings. -->
+<a class="skip" id="skip" href="#page-home">Skip to the content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 13.5A8.2 8.2 0 0 1 10.5 4a8.5 8.5 0 1 0 9.5 9.5Z" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21" stroke-linecap="round"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.2 11 14.7l4.5-5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 20 6v6c0 4.5-3.2 7.9-8 9-4.8-1.1-8-4.5-8-9V6Z" stroke-linejoin="round"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9.5 16h5" stroke-linecap="round"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 8.5 4.5L12 12 3.5 7.5 12 3Z" stroke-linejoin="round"/><path d="m4 12 8 4.2 8-4.2M4 16.4 12 20.6l8-4.2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4h9l1 2h5v9h-6l-1-2H5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3.5M15.5 12v2.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.2 13.9 9l5.8 1.9-5.8 1.9L12 18.6l-1.9-5.8L4.3 10.9 10.1 9Z" stroke-linejoin="round"/><path d="M18.5 3v3.4M20.2 4.7h-3.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/></symbol>
+</defs></svg>
+
+<div id="progress"></div>
+
+<div class="nav-shell">
+  <nav class="nav" id="nav" aria-label="Main">
+    <a class="brand" href="#/home" data-route="home">
+      <span class="mk"><svg><use href="#i-pulse"/></svg></span>
+      <b translate="no">IntelPulse</b>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#scoring">Scoring</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#sources">Sources</a>
+      <a href="workbench.html">Workbench</a>
+    </div>
+    <button class="icon-ghost" id="theme-btn" aria-label="Switch theme">
+      <svg id="theme-icon"><use href="#i-moon"/></svg>
+    </button>
+    <button class="burger" id="burger" aria-label="Open the menu" aria-expanded="false" aria-controls="menu">
+      <svg id="burger-icon"><use href="#i-menu"/></svg>
+    </button>
+    <button class="nav-cta" id="nav-cta" data-route="console">Open console <svg><use href="#i-arrow"/></svg></button>
+  </nav>
+</div>
+<div class="menu-scrim" id="menu-scrim"></div>
+<nav class="menu" id="menu" aria-label="Sections">
+  <a href="#how" data-scroll="#how"><svg><use href="#i-layers"/></svg> How it works</a>
+  <a href="#scoring" data-scroll="#scoring"><svg><use href="#i-target"/></svg> Scoring</a>
+  <a href="#evidence" data-scroll="#evidence"><svg><use href="#i-doc"/></svg> Evidence</a>
+  <a href="#sources" data-scroll="#sources"><svg><use href="#i-globe"/></svg> Sources</a>
+  <hr>
+  <a href="workbench.html"><svg><use href="#i-pulse"/></svg> Analyst workbench</a>
+  <a href="explorer.html"><svg><use href="#i-grid"/></svg> Campaign graph</a>
+  <button class="menu-cta" id="menu-cta" data-route="console">Open console <svg><use href="#i-arrow"/></svg></button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════ LANDING ══ -->
+<main id="page-home" class="route">
+  <section class="sky">
+    <span class="cloud c1" data-depth="0.20"></span>
+    <span class="cloud c2" data-depth="0.34"></span>
+    <span class="cloud c3" data-depth="0.14"></span>
+    <span class="cloud c4" data-depth="0.26"></span>
+
+    <div class="wrap hero">
+      <h1 class="rise"><span>Reliable triage you</span><span>can trust in every alert</span></h1>
+      <p class="lede rise">Regain visibility over the indicators hitting your estate — one pass across
+        every intelligence source, one auditable verdict, one ticket your team can act on.</p>
+      <div class="hero-cta rise">
+        <button class="btn btn-dark" data-route="console">Open the console <svg><use href="#i-arrow"/></svg></button>
+        <button class="btn btn-light" data-scroll="#how">See how it scores</button>
+      </div>
+
+      <div class="preview-wrap rise">
+        <div class="preview" id="preview" aria-hidden="true">
+         <div class="preview-scaler" id="preview-scaler" inert>
+          <div class="console" data-preview="1">
+            <aside class="side">
+              <div class="side-logo"><span class="mk"><svg><use href="#i-pulse"/></svg></span><b translate="no">IntelPulse</b></div>
+              <div id="side-nav-preview"></div>
+            </aside>
+            <div class="console-main" id="console-preview"></div>
+          </div>
+         </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap strip rise" id="sources">
+    <div class="inner" id="marquee" tabindex="0" role="group" aria-label="Intelligence sources — scrollable">
+      <div class="mq-track">
+<div class="mq-run">
+        <span class="src"><i><svg><use href="#i-shield"/></svg></i> AbuseIPDB</span>
+        <span class="src"><i><svg><use href="#i-globe"/></svg></i> AlienVault OTX</span>
+        <span class="src"><i><svg><use href="#i-bot"/></svg></i> GreyNoise</span>
+        <span class="src"><i><svg><use href="#i-target"/></svg></i> ThreatFox</span>
+        <span class="src"><i><svg><use href="#i-layers"/></svg></i> URLhaus</span>
+        <span class="src"><i><svg><use href="#i-lock"/></svg></i> MaxMind GeoLite2</span>
+        <span class="src"><i><svg><use href="#i-flag"/></svg></i> Feodo Tracker</span>
+        <span class="src"><i><svg><use href="#i-key"/></svg></i> CISA KEV</span>
+        <span class="src"><i><svg><use href="#i-doc"/></svg></i> NVD slice</span>
+        <span class="src"><i><svg><use href="#i-grid"/></svg></i> FireHOL</span>
+      </div>
+      <div class="mq-run" aria-hidden="true">
+        <span class="src"><i><svg><use href="#i-shield"/></svg></i> AbuseIPDB</span>
+        <span class="src"><i><svg><use href="#i-globe"/></svg></i> AlienVault OTX</span>
+        <span class="src"><i><svg><use href="#i-bot"/></svg></i> GreyNoise</span>
+        <span class="src"><i><svg><use href="#i-target"/></svg></i> ThreatFox</span>
+        <span class="src"><i><svg><use href="#i-layers"/></svg></i> URLhaus</span>
+        <span class="src"><i><svg><use href="#i-lock"/></svg></i> MaxMind GeoLite2</span>
+        <span class="src"><i><svg><use href="#i-flag"/></svg></i> Feodo Tracker</span>
+        <span class="src"><i><svg><use href="#i-key"/></svg></i> CISA KEV</span>
+        <span class="src"><i><svg><use href="#i-doc"/></svg></i> NVD slice</span>
+        <span class="src"><i><svg><use href="#i-grid"/></svg></i> FireHOL</span>
+      </div>
+      <div class="mq-run" aria-hidden="true">
+        <span class="src"><i><svg><use href="#i-shield"/></svg></i> AbuseIPDB</span>
+        <span class="src"><i><svg><use href="#i-globe"/></svg></i> AlienVault OTX</span>
+        <span class="src"><i><svg><use href="#i-bot"/></svg></i> GreyNoise</span>
+        <span class="src"><i><svg><use href="#i-target"/></svg></i> ThreatFox</span>
+        <span class="src"><i><svg><use href="#i-layers"/></svg></i> URLhaus</span>
+        <span class="src"><i><svg><use href="#i-lock"/></svg></i> MaxMind GeoLite2</span>
+        <span class="src"><i><svg><use href="#i-flag"/></svg></i> Feodo Tracker</span>
+        <span class="src"><i><svg><use href="#i-key"/></svg></i> CISA KEV</span>
+        <span class="src"><i><svg><use href="#i-doc"/></svg></i> NVD slice</span>
+        <span class="src"><i><svg><use href="#i-grid"/></svg></i> FireHOL</span>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="wrap sec" id="how">
+    <div class="sec-head">
+      <div class="rise">
+        <h2>Advanced correlation.<br>Unrivalled trust in every verdict.</h2>
+        <button class="btn btn-dark btn-sm" style="margin-top:18px" data-route="console">Get started <svg><use href="#i-arrow"/></svg></button>
+      </div>
+      <p class="rise">Each source is wrong in a different direction. IntelPulse weighs them against each
+        other, floors the verdict on the most authoritative hit, and shows the arithmetic — so a score is
+        an argument you can check, not a number you have to believe.</p>
+    </div>
+
+    <div class="feature-grid" id="features">
+      <button class="feature rise" aria-pressed="false" data-feature="ingest">
+        <span class="ic"><svg><use href="#i-layers"/></svg></span>
+        <h3>Ingest anything</h3>
+        <p>Paste a raw syslog line, a JSON alert or 100 indicators. Private and reserved space is dropped before any lookup.</p>
+      </button>
+      <button class="feature rise" aria-pressed="true" data-feature="correlate">
+        <span class="ic"><svg><use href="#i-target"/></svg></span>
+        <h3>Correlate live</h3>
+        <p>Every applicable source queried concurrently. A dead vendor degrades the result instead of failing it.</p>
+      </button>
+      <button class="feature rise" aria-pressed="false" data-feature="score">
+        <span class="ic"><svg><use href="#i-shield"/></svg></span>
+        <h3>Score honestly</h3>
+        <p>A weighted composite with an authority floor, plus confidence reported separately from the score.</p>
+      </button>
+      <button class="feature rise" aria-pressed="false" data-feature="report">
+        <span class="ic"><svg><use href="#i-doc"/></svg></span>
+        <h3>Write the ticket</h3>
+        <p>Executive summary, evidence, ATT&amp;CK mapping and containment steps, ready to paste into Jira.</p>
+      </button>
+    </div>
+  </section>
+
+  <section class="wrap sec" id="evidence" style="padding-top:0">
+    <div class="sec-title-c rise"><h2>Fortifying the triage queue</h2></div>
+    <div class="bento">
+      <div class="card hoverable rise" style="padding:20px">
+        <h3>Assets over time</h3>
+        <p class="sub">Indicators that reached an actionable verdict, by month. April is the Emotet-style resurgence.</p>
+        <div class="chart-box" style="padding:14px 0 0" id="bento-bars"></div>
+      </div>
+      <div class="card hoverable rise" style="padding:20px">
+        <h3>Source agreement</h3>
+        <p class="sub">What the vendors actually said about the same indicator, in the order the engine weighed them.</p>
+        <div class="tick-list" id="agreement">
+          <span class="on"><i><svg><use href="#i-check-circle"/></svg></i> ThreatFox — confirmed botnet C2</span>
+          <span class="on"><i><svg><use href="#i-check-circle"/></svg></i> AbuseIPDB — 96% across 412 reports</span>
+          <span class="on"><i><svg><use href="#i-check-circle"/></svg></i> Local feeds — Feodo tracker hit</span>
+          <span><i><svg><use href="#i-check-circle"/></svg></i> URLhaus — no record</span>
+        </div>
+        <div id="bento-line" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <div class="card rise" style="margin-top:14px;padding:20px">
+      <div class="panel-head" style="margin-bottom:10px">
+        <h4>Finding overview</h4>
+        <div class="seg" role="group" aria-label="Filter findings">
+          <button data-filter="all" aria-pressed="true">All</button>
+          <button data-filter="open" aria-pressed="false">Open</button>
+          <button data-filter="close" aria-pressed="false">Closed</button>
+        </div>
+      </div>
+      <div class="label-xs">Severity</div>
+      <div class="sev" id="sev-landing"></div>
+      <div class="label-xs" style="margin-top:14px">State</div>
+      <div class="state-row" id="state-landing"></div>
+    </div>
+  </section>
+
+  <section class="wrap sec" id="scoring">
+    <div class="show-row">
+      <div class="rise">
+        <div class="eyebrow">Run it yourself</div>
+        <h3>IntelPulse plays well with what you already run</h3>
+        <p>Point it at your own API keys and it speaks to the vendors you already pay for. No keys at all and
+          it still works — the offline feeds, GeoLite2 and the local CVE slice carry the triage.</p>
+        <div class="btns">
+          <button class="btn btn-dark btn-sm" data-route="console">Open the console <svg><use href="#i-arrow"/></svg></button>
+          <button class="btn btn-light btn-sm" data-scroll="#evidence">See the evidence</button>
+        </div>
+      </div>
+      <div class="sky-card rise">
+        <div class="inner">
+          <div class="panel-head" style="margin-bottom:6px"><h4>Attack surface</h4>
+            <button class="kpi-more" aria-label="Panel options"><svg style="width:15px;height:15px;stroke:currentColor;fill:none"><use href="#i-dots"/></svg></button>
+          </div>
+          <div class="gauge-wrap" id="gauge-landing"></div>
+          <div class="legend-row"><i style="background:var(--flame)"></i> IP addresses <span class="n">56</span></div>
+          <div class="legend-row"><i style="background:#ffc4b1"></i> Services <span class="n">24</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="show-row">
+      <div class="sky-card rise" style="order:-1">
+        <div class="inner">
+          <div class="panel-head" style="margin-bottom:6px"><h4>Assets over time</h4>
+            <button class="kpi-more" aria-label="Panel options"><svg style="width:15px;height:15px;stroke:currentColor;fill:none"><use href="#i-dots"/></svg></button>
+          </div>
+          <div id="bars-showcase"></div>
+        </div>
+      </div>
+      <div class="rise">
+        <div class="eyebrow">Open by design</div>
+        <h3>The scoring model is documented, not asserted</h3>
+        <p>Weights, authority values and thresholds are configuration, and the API returns them. Any verdict
+          can be reproduced from the evidence that produced it — which is the only kind of score worth
+          putting in a change ticket.</p>
+        <div class="btns">
+          <button class="btn btn-dark btn-sm" data-scroll="#how">Read the model <svg><use href="#i-arrow"/></svg></button>
+          <button class="btn btn-light btn-sm" data-route="console">Try a triage</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="cta-band rise">
+      <span class="cloud c1" style="top:-30px;left:10%;width:300px;height:110px" data-depth="0.1"></span>
+      <span class="cloud c2" style="top:30px;right:6%;width:260px;height:100px" data-depth="0.16"></span>
+      <h2>Run a triage on your own alert</h2>
+      <p>The console below is live and running on a bundled synthetic dataset — no keys, no backend, nothing
+        to install.</p>
+      <div class="hero-cta">
+        <button class="btn btn-dark" data-route="console">Open the console <svg><use href="#i-arrow"/></svg></button>
+        <button class="btn btn-light" data-scroll="#how">How scoring works</button>
+      </div>
+    </section>
+
+    <footer class="foot rise">
+      <div class="about">
+        <div class="brand" style="padding:0"><span class="mk" style="background:var(--ink)"><svg style="stroke:var(--paper)"><use href="#i-pulse"/></svg></span>
+          <b style="color:var(--ink)" translate="no">IntelPulse</b></div>
+        <p>A triage workbench that correlates one alert across every source in a single pass, and writes the
+          ticket at the end of it.</p>
+        <form class="mail" id="mail-form" novalidate>
+          <input type="email" id="mail" name="email" placeholder="you@soc.example.com"
+                 aria-label="Email address" autocomplete="email" inputmode="email" spellcheck="false">
+          <button type="submit">Notify me</button>
+        </form>
+        <p class="mail-note" id="mail-note"></p>
+        <div class="socials">
+          <a href="#sources" data-scroll="#sources" aria-label="Intelligence feeds"><svg><use href="#i-globe"/></svg></a>
+          <a href="#evidence" data-scroll="#evidence" aria-label="How the evidence reads"><svg><use href="#i-doc"/></svg></a>
+          <a href="#/console" data-route="console" aria-label="Live source status"><svg><use href="#i-shield"/></svg></a>
+        </div>
+      </div>
+      <div><h3>Product</h3><a href="#how">Correlation engine</a><a href="#/console" data-route="console">Console</a><a href="workbench.html">Analyst workbench</a><a href="explorer.html">Campaign graph</a></div>
+      <div><h3>Sources</h3><a href="#sources">AbuseIPDB</a><a href="#sources">AlienVault OTX</a><a href="#sources">GreyNoise</a><a href="#sources">abuse.ch</a></div>
+      <div><h3>Offline</h3><a href="#sources">Feodo Tracker</a><a href="#sources">FireHOL</a><a href="#sources">CISA KEV</a><a href="#sources">NVD slice</a></div>
+      <div><h3>Project</h3><a href="#evidence">Evidence view</a><a href="#scoring">Scoring model</a><a href="workbench.html">Run a live triage</a><a href="explorer.html">Attack narrative</a></div>
+    </footer>
+    <p class="copyright">Synthetic sample data throughout — RFC 5737 addresses, RFC 2606 names. Built by Vinit Rami.</p>
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════════════════════ CONSOLE ══ -->
+<main id="page-console" class="wrap page-console" hidden>
+  <div class="console" id="console-full">
+    <div class="drawer-scrim" id="drawer-scrim"></div>
+    <aside class="side" id="console-side">
+      <div class="side-logo">
+        <span class="mk"><svg><use href="#i-pulse"/></svg></span><b translate="no">IntelPulse</b>
+      </div>
+      <button class="round-btn side-close" id="side-close" aria-label="Close the menu"><svg><use href="#i-close"/></svg></button>
+      <div id="side-nav-full"></div>
+    </aside>
+    <div class="console-main" id="console-body"></div>
+  </div>
+</main>
+
+<button class="to-top" id="to-top" aria-label="Back to top"><svg><use href="#i-up"/></svg></button>
+
+<button class="ai-fab" id="ai-fab" aria-expanded="false" aria-controls="ai-panel">
+  <svg class="spark"><use href="#i-spark"/></svg><span>Ask IntelPulse</span>
+</button>
+<div class="ai-scrim" id="ai-scrim"></div>
+<section class="ai" id="ai-panel" aria-label="IntelPulse assistant" aria-hidden="true">
+  <header class="ai-head">
+    <span class="ai-mark" aria-hidden="true"><svg><use href="#i-spark"/></svg></span>
+    <div>
+      <b>IntelPulse assistant</b>
+      <small>Answers from this project's docs and the loaded sample data</small>
+    </div>
+    <button class="round-btn" id="ai-close" aria-label="Close the assistant"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div class="ai-log" id="ai-log" role="log" aria-live="polite" aria-label="Conversation"></div>
+  <div class="ai-chips" id="ai-chips" role="group" aria-label="Suggested questions"></div>
+  <form class="ai-form" id="ai-form" novalidate>
+    <input id="ai-input" name="question" autocomplete="off" spellcheck="false"
+           aria-label="Ask a question" placeholder="Ask about scoring, sources, this data…">
+    <button type="submit">Ask</button>
+  </form>
+  <p class="ai-note">Runs entirely in your browser — it reads this project's documentation and the
+    dataset already on the page. No model is called and nothing leaves this tab.</p>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- the findings model first: suite.js derives the severity bar and the
+     state row from it, and its arithmetic is unit-tested in Node -->
+<script src="assets/console-model.js" defer></script>
+<script src="assets/suite.js" defer></script>
+</body>
+</html>
