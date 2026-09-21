@@ -48,38 +48,24 @@ seconds, stay readable at 03:00, and never let decoration compete with data.
   ■ medium, ● low, ▬ informational, ✓ allowlisted) **and** the verdict in text.
 - New palettes **must** be re-validated before use; do not eyeball contrast.
 
-## Two surfaces, two palettes
+## One palette across four surfaces
 
-The rules above describe the **analyst workbench** (`web/workbench.html`,
-`web/assets/tokens.css`) — the dark room an analyst works in.
+Every surface — the site and console (`web/index.html`, `assets/suite.css`),
+the analyst workbench (`web/workbench.html`, `assets/tokens.css` + `app.css`)
+and the campaign graph (`web/explorer.html`) — runs the same light-first
+palette: one hot accent `--accent` `#fe5729`, warm-biased neutrals, Outfit for
+interface, JetBrains Mono for machine data only.
 
-The **site and operator console** (`web/index.html`, `web/assets/suite.css`) is
-a separate, light surface: sky gradient, glass panels, one hot accent
-`--flame` `#fe5729` against near-black `--ink` `#1c1c1c`, Outfit for interface
-and JetBrains Mono still reserved for machine data. It keeps every rule in this
-file that is not about the dark ramp specifically: severity is never colour
-alone, a chart that carries a number has a table beside it or labels on it,
-motion is optional and everything works with `prefers-reduced-motion`.
-
-Two rules are specific to that surface:
-
-- **Every visible control must do something.** A button or link that answers
-  nothing is a bug, and `web/tests/suite.spec.mjs` clicks all of them to prove
-  it. A decorative render of the product (the hero device mock) must be `inert`
-  with `pointer-events: none`, not a second set of live controls.
-- **Every control clears 44×44 on a coarse pointer.** Use a
-  `@media (pointer: coarse)` floor rather than growing the desktop control.
-  Controls that read as text — footer columns, nav links — are controls.
-- **Below 900px the console rail is a drawer, not a column.** Any rule for it is
-  written against `#console-side`, never `.side`: the hero mock contains a
-  picture of the same rail and a blanket rule drags it out of the mock.
-- **The assistant panel is not a chat bot.** It answers only from topics
-  compiled into the page and the loaded dataset, it says so in the panel, and
-  below its match threshold it must say it does not know. Never let it guess at
-  a security question, and always encode the question it echoes back.
-- **Do not bring `--flame` into the workbench, or `--accent` into the site.**
-  If the two are ever unified, recompute the ramp against the ordinal gate
-  first — the gate is the reason the current ramps are safe, not taste.
+- **Two flames, and they are not interchangeable.** `--accent` carries fills,
+  rules and glows. Anything with text on it, and any accent-coloured text, uses
+  `--accent-strong` `#d93d15` — white on `--accent` is 3.18:1.
+- **The evidence ramp is azure, not warm.** Flame owns the accent and the
+  severity end of the scale; a warm ramp reads as "this is bad" at every step.
+- **Recompute, never recolour.** A palette change means re-running the ordinal
+  gate for the ramp and the 4.5:1 check for every severity against its card,
+  its page AND its own tinted wash. The wash is the one that gets missed.
+- **Graph categories are validated against the field they sit on**, at both its
+  brightest and its deepest point, with an OKLab separation floor of 0.12.
 
 ## Accessibility
 - Target: WCAG 2.2 AA, keyboard-first.
