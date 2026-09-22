@@ -59,7 +59,7 @@ jobs:
         run: pytest -q
 
   engine:
-    name: engine parity + model + design guards · 51 tests
+    name: engine parity + model + design guards · 56 tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -80,9 +80,9 @@ jobs:
       fail-fast: false
       matrix:
         spec:
-          - { file: ui.spec.mjs,     name: "workbench · 69 checks" }
-          - { file: suite.spec.mjs,  name: "site + console · 81 checks" }
-          - { file: mobile.spec.mjs, name: "phone, tablet, assistant · 83 checks" }
+          - { file: ui.spec.mjs,     name: "workbench + campaign graph · 79 checks" }
+          - { file: suite.spec.mjs,  name: "site + console · 82 checks" }
+          - { file: mobile.spec.mjs, name: "phone, tablet, assistant · 99 checks" }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -95,10 +95,7 @@ jobs:
       # already support, so that stays true.
       - name: Install Playwright
         run: |
-          # cytoscape too: the workbench spec stubs the blocked CDN with it, so
-          # the graph is asserted on the path a laptop actually takes rather
-          # than only through the SVG fallback.
-          npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright@1.56.1 cytoscape@3.30.2
+          npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright@1.56.1
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
 
       - name: Serve web/
@@ -118,6 +115,5 @@ jobs:
       - name: Test
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/pw/node_modules/playwright/index.mjs
-          CYTOSCAPE_PATH: ${{ runner.temp }}/pw/node_modules/cytoscape/dist/cytoscape.min.js
           INTELPULSE_URL: http://127.0.0.1:8123/
         run: node web/tests/${{ matrix.spec.file }}
