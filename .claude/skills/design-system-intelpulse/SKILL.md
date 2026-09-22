@@ -25,7 +25,7 @@ seconds, stay readable at 03:00, and never let decoration compete with data.
 ## Style Foundations
 - Visual style: dark-first cloud-platform console; hairline borders and a 1px
   inset highlight instead of drop shadows; glass only on things that float
-  (command palette, sheet, graph toolbar, toast)
+  (the scoring dialog, the graph readout, the toast, the assistant)
 - Typography: Inter for interface, JetBrains Mono **only** for machine data
   (indicators, hashes, log lines, numeric columns). Scale 10/11/12/13/14/15/20/52
 - Spacing: 4 / 8 / 12 / 16 / 24 / 32 / 48 (dense dashboard rhythm, 4px base)
@@ -48,12 +48,15 @@ seconds, stay readable at 03:00, and never let decoration compete with data.
   ■ medium, ● low, ▬ informational, ✓ allowlisted) **and** the verdict in text.
 - New palettes **must** be re-validated before use; do not eyeball contrast.
 
-## One palette across four surfaces
+## One palette, one stylesheet
 
-Every surface — the site and console (`web/index.html`, `assets/suite.css`),
-the analyst workbench (`web/workbench.html`, `assets/tokens.css` + `app.css`)
-and the campaign graph (`web/explorer.html`) — runs the same light-first
-palette: one hot accent `--accent` `#fe5729`, warm-biased neutrals, Outfit for
+The site and the console (`web/index.html`) — including the analyst workbench
+and the campaign graph, which are console views (`#/console/workbench`,
+`#/console/campaigns`, built in `assets/console-panes.js`) — load one
+stylesheet, `assets/suite.css`. `assets/tokens.css` is the validated reference:
+the severity and ramp values in `suite.css` **must** equal it, and a guard fails
+the build when they drift. Workbench and graph rules are scoped under `.wb` /
+`.cg` and **must not** carry raw colour. It is one light-first palette: one hot accent `--accent` `#fe5729`, warm-biased neutrals, Outfit for
 interface, JetBrains Mono for machine data only.
 
 - **Two flames, and they are not interchangeable.** `--accent` carries fills,
@@ -146,7 +149,7 @@ content and tone with examples · anti-patterns · QA checklist.
 ## Quality Gates
 Run before calling any UI change done:
 - [ ] `make test-web` — engine parity plus the static design guards.
-- [ ] `make test-ui` — 233 Chromium checks, all green.
+- [ ] `make test-ui` — 260 Chromium checks, all green.
 - [ ] Every new rule anchors to a token, a threshold or an example.
 - [ ] Every new control has all seven states.
 - [ ] Keyboard-only pass: reach every action, escape every overlay.
