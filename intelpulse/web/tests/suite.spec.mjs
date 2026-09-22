@@ -529,6 +529,17 @@ check("flipping the theme keeps the open view",
 await page.click("#theme-btn");
 await page.waitForTimeout(900);
 
+/* The theme toggle swaps inside document.startViewTransition() with a 560ms
+   reveal. While that runs, the live content sits behind the transition's
+   snapshot and elementsFromPoint() returns only <html> — so a fixed wait read
+   an empty paint whenever the transition started late, which under load it
+   does. Measured: 18 of 20 runs empty on main, arriving from deep in the page.
+   The product was right the whole time (the sky's first stop is exactly the
+   meta colour in both themes); the test was reading the page mid-animation.
+   Wait for the transition to finish instead of guessing how long it takes. */
+const themeSettled = () => page.waitForFunction(() => !document.getAnimations().some((a) =>
+  String((a.effect && a.effect.pseudoElement) || "").includes("view-transition")), null, { timeout: 4000 });
+
 const chrome = async () => page.evaluate(() => {
   const stack = document.elementsFromPoint(Math.round(innerWidth / 2), 2);
   const el = stack.find((n) => getComputedStyle(n).position !== "fixed" &&
@@ -549,13 +560,16 @@ const chrome = async () => page.evaluate(() => {
 });
 
 for (const [where, hash] of [["the site", "#/home"], ["the console", "#/console/dashboard"]]) {
-  await page.evaluate((h) => { location.hash = h; scrollTo(0, 0); }, hash);
+  // Instant: a smooth scroll to the top is an animation too.
+  await page.evaluate((h) => { location.hash = h; scrollTo({ top: 0, behavior: "instant" }); }, hash);
   await page.waitForTimeout(700);
+  await themeSettled();
   const light = await chrome();
   check("the browser chrome matches " + where, light.meta === light.paint,
     light.meta + " vs " + light.paint + " (" + light.where + ")");
   await page.click("#theme-btn");
   await page.waitForTimeout(900);
+  await themeSettled();
   const dark = await chrome();
   check("and still matches it in the dark", dark.meta === dark.paint,
     dark.meta + " vs " + dark.paint);
