@@ -78,6 +78,20 @@ check("the hero mock is inert", await page.$eval("#preview-scaler", (el) =>
 /* The page's own CSP forbids inline script — which is the point of having it —
    so the probe goes in through the debugger rather than a <script> tag. */
 const installProbe = () => page.evaluate(() => {
+  /* Settle the scroll-reveal before probing. `.rise` starts 22px low and slides
+     up over 280ms once it enters the viewport; the probe waits 140ms. For most
+     controls that is harmless, but the footer sits at the very end of the page
+     where scrollIntoView cannot centre it, so a link caught mid-slide had its
+     centre pushed below the viewport and read as "not hit-testable" — on some
+     runs and not others. This sweep asks whether every control answers a
+     click; a reveal animation is not that question, and the reduced-motion
+     path in the stylesheet already settles `.rise` exactly like this. */
+  if (!document.getElementById("probe-settle")) {
+    const settle = document.createElement("style");
+    settle.id = "probe-settle";
+    settle.textContent = ".rise{opacity:1!important;transform:none!important;transition:none!important}";
+    document.head.appendChild(settle);
+  }
   window.__probe = {
     mut: 0,
     list() {
@@ -126,6 +140,14 @@ async function reset(where) {
 
 const inert = [];
 let probed = 0;
+/* A link with target="_blank" answers a click by opening a new tab and leaves
+   this page exactly as it was, so none of the signals below can see it. The
+   footer grew its first such links (the source code, the scoring doc, the
+   author) and the sweep called all three dead. Opening a tab is as much an
+   answer as following a link to the workbench — count the popup, then close it
+   so the sweep does not depend on github.com being reachable. */
+let popped = 0;
+page.context().on("page", (tab) => { popped++; tab.close().catch(() => {}); });
 async function sweep(where) {
   await reset(where);
   const total = await page.evaluate(() => window.__probe.list().length);
@@ -144,22 +166,31 @@ async function sweep(where) {
       const box = el.getBoundingClientRect();
       const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
       const reachable = !!hit && (el.contains(hit) || hit.contains(el));
+      /* Name what is in the way, so a failure says what to fix instead of
+         only that something is wrong. */
+      const blocker = reachable ? "" : !hit
+        ? "nothing: centre " + Math.round(box.left + box.width / 2) + "," + Math.round(box.top + box.height / 2)
+          + " is outside the " + innerWidth + "x" + innerHeight + " viewport (box h=" + Math.round(box.height) + ", scrollY " + Math.round(scrollY) + ")"
+        : hit.tagName.toLowerCase()
+        + (hit.id ? "#" + hit.id : "") + (hit.classList.length ? "." + [...hit.classList].join(".") : "")
+        + " at " + Math.round(box.left + box.width / 2) + "," + Math.round(box.top + box.height / 2);
       window.__probe.mut = 0;
       window.__probe.before = { hash: location.hash, y: Math.round(scrollY) };
       el.click();
-      return { label, reachable };
+      return { label, reachable, blocker };
     }, i);
     if (!shot) continue;
     probed++;
+    const poppedBefore = popped;
     await page.waitForTimeout(360);
-    let answered = page_of(page.url()) !== page_of(BASE);
+    let answered = page_of(page.url()) !== page_of(BASE) || popped > poppedBefore;
     if (!answered) {
       const now = await page.evaluate(() => ({
         mut: window.__probe.mut, hash: location.hash, y: Math.round(scrollY), before: window.__probe.before
       })).catch(() => null);
       answered = !now || now.mut > 0 || now.hash !== now.before.hash || Math.abs(now.y - now.before.y) > 4;
     }
-    if (!shot.reachable) inert.push(where + " › " + shot.label + " (not hit-testable)");
+    if (!shot.reachable) inert.push(where + " › " + shot.label + " (not hit-testable, under " + shot.blocker + ")");
     else if (!answered) inert.push(where + " › " + shot.label + " (no effect)");
     await reset(where);
   }
@@ -537,19 +568,28 @@ for (const [where, hash] of [["the site", "#/home"], ["the console", "#/console/
   await page.waitForTimeout(900);
 }
 
-/* ─────────────────────────────────────────────────── forms and anchors */
+/* ──────────────────────────────────────────────── footer and anchors
+   The footer's "Notify me" form went: it told visitors they were subscribed
+   with no backend behind it. What replaced it is checked here in a real
+   browser rather than only statically. */
 await page.evaluate(() => { location.hash = "#/home"; });
 await page.waitForTimeout(500);
-await page.fill("#mail", "not-an-address");
-await page.click("#mail-form button");
-await page.waitForTimeout(300);
-check("the sign-up form rejects a bad address",
-  await page.$eval("#mail", (el) => el.getAttribute("aria-invalid")) === "true");
-await page.fill("#mail", "analyst@soc.example.com");
-await page.click("#mail-form button");
-await page.waitForTimeout(300);
-check("the sign-up form accepts a good one",
-  await page.$eval("#mail", (el) => el.getAttribute("aria-invalid")) === "false");
+const foot = await page.$$eval("footer.foot a", (links) => links.map((a) => ({
+  href: a.getAttribute("href"), target: a.target, rel: a.rel, text: a.textContent.trim()
+})));
+const external = foot.filter((l) => /^https?:/.test(l.href));
+check("every footer link that leaves the site opens safely in a new tab",
+  external.length > 0 && external.every((l) => l.target === "_blank" && /noopener/.test(l.rel)),
+  external.length + " external, " + external.filter((l) => !/noopener/.test(l.rel)).length + " without noopener");
+check("the footer has no two links to the same place",
+  new Set(foot.map((l) => l.href)).size === foot.length,
+  foot.length + " links, " + new Set(foot.map((l) => l.href)).size + " destinations");
+await page.click('footer.foot a[data-route="console"]');
+await page.waitForTimeout(700);
+check("the footer's console link opens the console, not a scroll position",
+  (await page.evaluate(() => location.hash)).startsWith("#/console"));
+await page.evaluate(() => { location.hash = "#/home"; });
+await page.waitForTimeout(500);
 
 await page.evaluate(() => { scrollTo(0, 0); location.hash = "#how"; });
 await page.waitForTimeout(1100);
