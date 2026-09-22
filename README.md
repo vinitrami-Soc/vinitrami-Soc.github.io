@@ -34,10 +34,11 @@ Jira-ready SOC ticket.
 * **Docs:** [project README](intelpulse/README.md) · [scoring model](intelpulse/docs/SCORING.md) ·
   [API reference](intelpulse/docs/API.md) · [security posture](intelpulse/docs/SECURITY.md) ·
   [design system](intelpulse/docs/DESIGN.md)
-* **Tests:** `cd intelpulse && make test` (63 backend, incl. the security suite),
-  `make test-web` (21 node tests: engine parity + design-system guards),
-  `make test-ui` (56 Chromium checks: XSS, hostile URLs, degradation, command palette, theming,
-  accessibility, forced colours, touch targets), `make audit` (pip-audit).
+* **Tests:** `cd intelpulse && make test` (166 backend, incl. the security suite and the
+  3,400-line extraction corpus), `make test-web` (51 node tests: engine parity, console model,
+  design-system guards), `make test-ui` (233 Chromium checks across workbench, site + console and
+  phone/tablet/assistant: XSS, hostile URLs, degradation, command palette, theming, accessibility,
+  forced colours, touch targets), `make audit` (pip-audit).
 To change the headshot: replace profile.jpg, then regenerate variants:
 `npx sharp-cli -i assets/profile.jpg -o assets/profile-800.webp resize 800` (repeat for -800.jpg, -400.webp, -400.jpg)
 
