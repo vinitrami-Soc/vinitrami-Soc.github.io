@@ -1,5 +1,8 @@
 data/*.db
 data/*.mmdb
+# Refreshed from IANA by `python -m app.cli refresh-tlds`; the compiled
+# snapshot in app/tlds.py is the source of truth a checkout starts from.
+backend/data/tlds.txt
 .env
 __pycache__/
 *.pyc

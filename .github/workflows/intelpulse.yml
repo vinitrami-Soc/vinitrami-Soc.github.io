@@ -36,7 +36,7 @@ defaults:
 
 jobs:
   backend:
-    name: backend · 63 tests + ruff
+    name: backend · 166 tests + ruff
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
