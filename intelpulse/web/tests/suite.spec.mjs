@@ -78,20 +78,6 @@ check("the hero mock is inert", await page.$eval("#preview-scaler", (el) =>
 /* The page's own CSP forbids inline script — which is the point of having it —
    so the probe goes in through the debugger rather than a <script> tag. */
 const installProbe = () => page.evaluate(() => {
-  /* Settle the scroll-reveal before probing. `.rise` starts 22px low and slides
-     up over 280ms once it enters the viewport; the probe waits 140ms. For most
-     controls that is harmless, but the footer sits at the very end of the page
-     where scrollIntoView cannot centre it, so a link caught mid-slide had its
-     centre pushed below the viewport and read as "not hit-testable" — on some
-     runs and not others. This sweep asks whether every control answers a
-     click; a reveal animation is not that question, and the reduced-motion
-     path in the stylesheet already settles `.rise` exactly like this. */
-  if (!document.getElementById("probe-settle")) {
-    const settle = document.createElement("style");
-    settle.id = "probe-settle";
-    settle.textContent = ".rise{opacity:1!important;transform:none!important;transition:none!important}";
-    document.head.appendChild(settle);
-  }
   window.__probe = {
     mut: 0,
     list() {
@@ -122,7 +108,18 @@ async function reset(where) {
     await installProbe();
     await page.waitForTimeout(700);
   }
-  await page.evaluate((w) => { location.hash = w === "console" ? "#/console" : "#/home"; scrollTo(0, 0); }, where);
+  /* Instant, not smooth. The page sets `html { scroll-behavior: smooth }`, so a
+     bare scrollTo(0, 0) from the bottom of the page is an animation that is still
+     running when the next probe calls scrollIntoView -- which jumps into place and
+     is then dragged back up by the tail of the old scroll. A footer control, at
+     the very end of the page, ended up below the viewport and read as "not
+     hit-testable" on some runs and not others. Measured: centre y 1049 in a
+     1000px viewport. Settling the reveal animation was tried first and did not
+     remove it. */
+  await page.evaluate((w) => {
+    location.hash = w === "console" ? "#/console" : "#/home";
+    scrollTo({ top: 0, behavior: "instant" });
+  }, where);
   await page.waitForTimeout(260);
   if (where === "console") {
     await page.evaluate(() => {
@@ -161,7 +158,7 @@ async function sweep(where) {
          move the page when scrolled into view. Leave the page off the very top
          so a "back to top" control has something to do and its answer shows —
          but stay under the 220px mark, past which the nav tucks itself away. */
-      if (scrollY < 8) scrollTo(0, 180);
+      if (scrollY < 8) scrollTo({ top: 180, behavior: "instant" });
       await new Promise((r) => setTimeout(r, 140));
       const box = el.getBoundingClientRect();
       const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
