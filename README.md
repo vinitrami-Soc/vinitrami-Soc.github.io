@@ -68,3 +68,16 @@ Or connect the folder as a repo; no build command, publish directory = `/`.
 - Press `~` (or the floating button / the "Feeling lucky?" cube) → interactive terminal.
 - Commands: help, whoami, skills, certs, projects, contact, cv, theme, nmap,
   sudo hire-vinit, ls, cat flag.txt, clear, exit.
+
+## Licence
+Two sets of terms, because this repository holds two kinds of work:
+
+- **Code** — everything under `intelpulse/`, and the site's own HTML, CSS and
+  JavaScript — is MIT. Build your own site with it.
+- **Personal content** — the photographs, `assets/Vinit_Rami_CV.pdf`, the
+  biography and the name — is all rights reserved. Reusing the code is welcome;
+  reusing the identity is not.
+- **Fonts** in `assets/fonts/` are third-party, under the SIL Open Font
+  Licence. See `assets/fonts/LICENSE.md`.
+
+Full text in [`LICENSE`](LICENSE).
