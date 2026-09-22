@@ -36,7 +36,7 @@ defaults:
 
 jobs:
   backend:
-    name: backend · 63 tests + ruff
+    name: backend · 166 tests + ruff
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -59,7 +59,7 @@ jobs:
         run: pytest -q
 
   engine:
-    name: engine parity + model + design guards · 35 tests
+    name: engine parity + model + design guards · 51 tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -80,9 +80,9 @@ jobs:
       fail-fast: false
       matrix:
         spec:
-          - { file: ui.spec.mjs,     name: "workbench · 64 checks" }
-          - { file: suite.spec.mjs,  name: "site + console · 54 checks" }
-          - { file: mobile.spec.mjs, name: "phone, tablet, assistant · 70 checks" }
+          - { file: ui.spec.mjs,     name: "workbench · 69 checks" }
+          - { file: suite.spec.mjs,  name: "site + console · 81 checks" }
+          - { file: mobile.spec.mjs, name: "phone, tablet, assistant · 83 checks" }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

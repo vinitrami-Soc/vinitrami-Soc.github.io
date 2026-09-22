@@ -146,7 +146,7 @@ content and tone with examples · anti-patterns · QA checklist.
 ## Quality Gates
 Run before calling any UI change done:
 - [ ] `make test-web` — engine parity plus the static design guards.
-- [ ] `make test-ui` — 56 Chromium checks, all green.
+- [ ] `make test-ui` — 233 Chromium checks, all green.
 - [ ] Every new rule anchors to a token, a threshold or an example.
 - [ ] Every new control has all seven states.
 - [ ] Keyboard-only pass: reach every action, escape every overlay.

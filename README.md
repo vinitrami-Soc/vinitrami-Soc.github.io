@@ -34,10 +34,11 @@ Jira-ready SOC ticket.
 * **Docs:** [project README](intelpulse/README.md) · [scoring model](intelpulse/docs/SCORING.md) ·
   [API reference](intelpulse/docs/API.md) · [security posture](intelpulse/docs/SECURITY.md) ·
   [design system](intelpulse/docs/DESIGN.md)
-* **Tests:** `cd intelpulse && make test` (63 backend, incl. the security suite),
-  `make test-web` (21 node tests: engine parity + design-system guards),
-  `make test-ui` (56 Chromium checks: XSS, hostile URLs, degradation, command palette, theming,
-  accessibility, forced colours, touch targets), `make audit` (pip-audit).
+* **Tests:** `cd intelpulse && make test` (166 backend, incl. the security suite and the
+  3,400-line extraction corpus), `make test-web` (51 node tests: engine parity, console model,
+  design-system guards), `make test-ui` (233 Chromium checks across workbench, site + console and
+  phone/tablet/assistant: XSS, hostile URLs, degradation, command palette, theming, accessibility,
+  forced colours, touch targets), `make audit` (pip-audit).
 To change the headshot: replace profile.jpg, then regenerate variants:
 `npx sharp-cli -i assets/profile.jpg -o assets/profile-800.webp resize 800` (repeat for -800.jpg, -400.webp, -400.jpg)
 
@@ -68,3 +69,16 @@ Or connect the folder as a repo; no build command, publish directory = `/`.
 - Press `~` (or the floating button / the "Feeling lucky?" cube) → interactive terminal.
 - Commands: help, whoami, skills, certs, projects, contact, cv, theme, nmap,
   sudo hire-vinit, ls, cat flag.txt, clear, exit.
+
+## Licence
+Two sets of terms, because this repository holds two kinds of work:
+
+- **Code** — everything under `intelpulse/`, and the site's own HTML, CSS and
+  JavaScript — is MIT. Build your own site with it.
+- **Personal content** — the photographs, `assets/Vinit_Rami_CV.pdf`, the
+  biography and the name — is all rights reserved. Reusing the code is welcome;
+  reusing the identity is not.
+- **Fonts** in `assets/fonts/` are third-party, under the SIL Open Font
+  Licence. See `assets/fonts/LICENSE.md`.
+
+Full text in [`LICENSE`](LICENSE).
