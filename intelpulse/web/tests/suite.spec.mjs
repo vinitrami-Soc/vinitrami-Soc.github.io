@@ -115,7 +115,7 @@ async function reset(where) {
      the very end of the page, ended up below the viewport and read as "not
      hit-testable" on some runs and not others. Measured: centre y 1049 in a
      1000px viewport. Settling the reveal animation was tried first and did not
-     remove it. */
+     remove it. This made it rarer but not gone; the probe below re-measures. */
   await page.evaluate((w) => {
     location.hash = w === "console" ? "#/console" : "#/home";
     scrollTo({ top: 0, behavior: "instant" });
@@ -141,26 +141,48 @@ let probed = 0;
    this page exactly as it was, so none of the signals below can see it. The
    footer grew its first such links (the source code, the scoring doc, the
    author) and the sweep called all three dead. Opening a tab is as much an
-   answer as following a link to the workbench — count the popup, then close it
-   so the sweep does not depend on github.com being reachable. */
+   answer as following a link to the workbench — count the popup, then close it.
+   Playwright reports a popup only once its first navigation commits, and
+   github.com took longer than the sweep's 360ms in CI (measured locally: 200 to
+   320ms even with the request failing). So a navigation that leaves the site is
+   answered with a stub page -- the sweep no longer depends on github.com being
+   reachable or quick -- and a link that opens a tab gets up to 3s to do it.
+   Only navigations are stubbed: fonts and the like still load for real. */
 let popped = 0;
 page.context().on("page", (tab) => { popped++; tab.close().catch(() => {}); });
+await page.context().route((url) => url.hostname !== new URL(BASE).hostname, (route) =>
+  route.request().isNavigationRequest()
+    ? route.fulfill({ status: 200, contentType: "text/html", body: "<!doctype html><title>stub</title>" })
+    : route.continue());
 async function sweep(where) {
   await reset(where);
   const total = await page.evaluate(() => window.__probe.list().length);
   for (let i = 0; i < total; i++) {
+    /* Read before the click: a stubbed popup can be reported before this
+       evaluate resolves, and a count taken after it would already include it. */
+    const poppedBefore = popped;
     const shot = await page.evaluate(async (index) => {
       const el = window.__probe.list()[index];
       if (!el) return null;
       const label = window.__probe.label(el);
-      el.scrollIntoView({ block: "center", behavior: "instant" });
-      /* A control pinned to the viewport (the brand, the theme button) does not
-         move the page when scrolled into view. Leave the page off the very top
-         so a "back to top" control has something to do and its answer shows —
-         but stay under the 220px mark, past which the nav tucks itself away. */
-      if (scrollY < 8) scrollTo({ top: 180, behavior: "instant" });
-      await new Promise((r) => setTimeout(r, 140));
-      const box = el.getBoundingClientRect();
+      /* Up to three tries. The page can still be settling (a web font swapping
+         in reflows every section above the footer), and a control measured
+         mid-reflow sat below a viewport it fits in. One that is still out of
+         reach after three tries is reported, with what is in the way. */
+      let box;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        el.scrollIntoView({ block: "center", behavior: "instant" });
+        /* A control pinned to the viewport (the brand, the theme button) does
+           not move the page when scrolled into view. Leave the page off the
+           very top so a "back to top" control has something to do and its
+           answer shows — but stay under the 220px mark, past which the nav
+           tucks itself away. */
+        if (scrollY < 8) scrollTo({ top: 180, behavior: "instant" });
+        await new Promise((r) => setTimeout(r, 140));
+        box = el.getBoundingClientRect();
+        const cy = box.top + box.height / 2;
+        if (cy >= 0 && cy <= innerHeight) break;
+      }
       const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
       const reachable = !!hit && (el.contains(hit) || hit.contains(el));
       /* Name what is in the way, so a failure says what to fix instead of
@@ -174,12 +196,14 @@ async function sweep(where) {
       window.__probe.mut = 0;
       window.__probe.before = { hash: location.hash, y: Math.round(scrollY) };
       el.click();
-      return { label, reachable, blocker };
+      return { label, reachable, blocker, opensTab: el.matches('a[target="_blank"]') };
     }, i);
     if (!shot) continue;
     probed++;
-    const poppedBefore = popped;
     await page.waitForTimeout(360);
+    for (let waited = 0; shot.opensTab && popped === poppedBefore && waited < 3000; waited += 100) {
+      await page.waitForTimeout(100);
+    }
     let answered = page_of(page.url()) !== page_of(BASE) || popped > poppedBefore;
     if (!answered) {
       const now = await page.evaluate(() => ({
