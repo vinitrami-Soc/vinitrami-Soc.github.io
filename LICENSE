@@ -1,0 +1,56 @@
+This repository holds two different kinds of work, under two different terms.
+
+────────────────────────────────────────────────────────────────────────
+1. SOURCE CODE — MIT Licence
+────────────────────────────────────────────────────────────────────────
+
+Applies to the code in this repository: everything under `intelpulse/`, and
+the HTML, CSS and JavaScript of the site itself.
+
+MIT License
+
+Copyright (c) 2026 Vinit Rami
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+────────────────────────────────────────────────────────────────────────
+2. PERSONAL CONTENT — All rights reserved
+────────────────────────────────────────────────────────────────────────
+
+NOT covered by the MIT licence above:
+
+  * `assets/profile*.jpg`, `assets/profile*.webp` — photographs of Vinit Rami
+  * `assets/Vinit_Rami_CV.pdf` — curriculum vitae
+  * The biography, role descriptions, employment history and any other
+    personal or professional claims written in the site copy
+  * The name "Vinit Rami" and any associated personal branding
+
+Copyright (c) 2026 Vinit Rami. All rights reserved.
+
+You may read this repository and reuse its code under the MIT terms above.
+You may not republish the photographs, the CV, or the personal content, or
+present any of it as describing yourself. Reusing the code to build your own
+site is welcome; reusing the identity is not.
+
+────────────────────────────────────────────────────────────────────────
+3. BUNDLED FONTS — SIL Open Font License 1.1
+────────────────────────────────────────────────────────────────────────
+
+The WOFF2 files in `assets/fonts/` are third-party and carry their own terms.
+See `assets/fonts/LICENSE.md` for the family-by-family detail.
