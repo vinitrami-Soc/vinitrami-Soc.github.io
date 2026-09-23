@@ -80,8 +80,8 @@ jobs:
       fail-fast: false
       matrix:
         spec:
-          - { file: ui.spec.mjs,     name: "workbench + campaign graph · 79 checks" }
-          - { file: suite.spec.mjs,  name: "site + console · 82 checks" }
+          - { file: ui.spec.mjs,     name: "workbench + campaign graph · 91 checks" }
+          - { file: suite.spec.mjs,  name: "site + console · 83 checks" }
           - { file: mobile.spec.mjs, name: "phone, tablet, assistant · 99 checks" }
     steps:
       - uses: actions/checkout@v4
