@@ -36,7 +36,7 @@ Jira-ready SOC ticket.
   [design system](intelpulse/docs/DESIGN.md)
 * **Tests:** `cd intelpulse && make test` (200 backend, incl. the security suite, the 2026 OWASP
   audit's regressions and the 3,400-line extraction corpus), `make test-web` (56 node tests: engine
-  parity, console model, design-system guards), `make test-ui` (300 Chromium checks across the
+  parity, console model, design-system guards), `make test-ui` (307 Chromium checks across the
   workbench and campaign graph, site + console, phone/tablet/assistant and a hostile-input security
   suite: XSS, hostile APIs, poisoned storage, CSP, degradation, accessibility, touch targets),
   `make audit` (pip-audit). [Security audit →](intelpulse/docs/SECURITY-AUDIT.md)
