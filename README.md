@@ -36,7 +36,7 @@ Jira-ready SOC ticket.
   [design system](intelpulse/docs/DESIGN.md)
 * **Tests:** `cd intelpulse && make test` (166 backend, incl. the security suite and the
   3,400-line extraction corpus), `make test-web` (56 node tests: engine parity, console model,
-  design-system guards), `make test-ui` (260 Chromium checks across the workbench and campaign graph,
+  design-system guards), `make test-ui` (273 Chromium checks across the workbench and campaign graph,
   site + console, and phone/tablet/assistant: XSS, hostile URLs, degradation, both graphs, theming,
   accessibility, forced colours, touch targets), `make audit` (pip-audit).
 To change the headshot: replace profile.jpg, then regenerate variants:
