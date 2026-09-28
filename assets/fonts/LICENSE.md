@@ -15,7 +15,7 @@ Full licence text: <https://openfontlicense.org/open-font-license-official-text/
 (each file's own `licenseURL` record points at `scripts.sil.org/OFL`, which
 redirects there).
 
-These are subsetted WOFF2 builds — Google Fonts' subsetter drops the embedded
+These are subsetted WOFF2 builds. Google Fonts' subsetter drops the embedded
 licence-text record and keeps only the URL, which is why the text is linked
 above rather than quoted from the files.
 
@@ -25,5 +25,5 @@ distributed under the original reserved name. Nothing here is renamed or
 modified beyond subsetting.
 
 The first three are variable fonts: one file covers the whole weight axis
-(DM Sans 100–1000, JetBrains Mono 400–800, Space Grotesk 300–700). Caveat is
+(DM Sans 100 to 1000, JetBrains Mono 400 to 800, Space Grotesk 300 to 700). Caveat is
 static at weight 600.
