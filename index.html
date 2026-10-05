@@ -468,13 +468,13 @@ document.documentElement.setAttribute('data-theme', t);
       <div class="proj-card reveal" style="--d:.40s"><div class="proj-in">
         <div class="pj-top"><span class="pj-id">CASE-006 // SOC AUTOMATION</span><span class="badge done">✓ OPEN SOURCE</span></div>
         <h3>PhishHawk: Automated Phishing IOC &amp; Threat Triage Engine</h3>
-        <p>A terminal tool that runs the first ten minutes of L1 phishing triage by itself. It reads .eml and Outlook .msg files or a whole IMAP folder, opens archives, disk images and Office, PDF and OneNote files in memory, decodes QR codes, and catches lookalikes of your own domain even when SPF, DKIM and DMARC pass. It enriches via VirusTotal, URLScan.io, RDAP and AbuseIPDB, maps verdicts to MITRE ATT&amp;CK, and exports STIX 2.1 and MISP. Tested with no API keys on real mail it had never seen: 79.9% of 5,714 phishing emails from 2022 to 2026 caught, and 0.9% false positives across 5,945 legitimate emails.</p>
+        <p>A terminal tool that runs the first ten minutes of L1 phishing triage by itself. It reads .eml and Outlook .msg files or a whole report mailbox over IMAP, Microsoft Graph or the Gmail API, opens archives (7z included), ISO and VHD disk images and Office, PDF and OneNote files in memory, decodes QR codes, and catches lookalikes of your own domain even when SPF, DKIM and DMARC pass. It enriches via VirusTotal, URLScan.io, RDAP and AbuseIPDB, maps verdicts to MITRE ATT&amp;CK, and exports STIX 2.1 and MISP. Tested with no API keys on real mail it had never seen: 81.3% of 5,714 phishing emails from 2022 to 2026 caught, 46.9% of them called likely phishing outright, and 0.8% false positives across 5,945 legitimate emails.</p>
         <div class="pj-tags"><i>Python</i><i>Threat Intel</i><i>VirusTotal API</i><i>SOC Automation</i><i>MITRE ATT&amp;CK</i><i>STIX 2.1</i><i>MISP</i></div>
         <a class="arrow-link" style="margin-top:0" href="https://github.com/vinitrami-Soc/phishhawk" target="_blank" rel="noopener noreferrer">
             Source on GitHub
             <span class="abox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
           </a>
-        <div class="pj-foot"><b>v2.0.0 · 403 TESTS · CI · DOCKER</b></div>
+        <div class="pj-foot"><b>v2.1.0 · 527 TESTS · CI · DOCKER</b></div>
       </div></div>
     </div>
   </div>
